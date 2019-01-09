@@ -8,6 +8,7 @@ import Config from './Config.js';
 import Wallet from './Wallet.js';
 import RandomAddressChecker from './RandomAddressChecker';
 import PasswordProtect from './PasswordProtect';
+import Redeemer from './Redeemer.js';
 
 module.exports = {
   Payload,
@@ -21,4 +22,5 @@ module.exports = {
   Wallet,
   Config,
   PasswordProtect,
+  Redeemer
 };
