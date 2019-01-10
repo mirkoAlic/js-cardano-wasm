@@ -36,9 +36,26 @@ export const privateKeyToAddress = (module, privateKey) => {
   return address;
 }
 
+export const publicKeyToAddress = (module, publicKey) => {
+
+  if (publicKey.length !== PUBLIC_KEY_SIZE) { return false; }
+
+  const bufpublicKey = newArray(module, publicKey);
+  const bufaddress = newArray0(module, ADDRESS_SIZE);
+
+  module.cardano_redeem_pub_to_address(bufpublicKey, bufaddress);
+  let address = copyArray(module, bufaddress, ADDRESS_SIZE);
+  module.dealloc(bufpublicKey);
+  module.dealloc(bufaddress);
+
+  return address;
+ 
+}
+
 export default {
   privateKeyToPublicKey: apply(privateKeyToPublicKey, RustModule),
   privateKeyToAddress: apply(privateKeyToAddress, RustModule),
+  publicKeyToAddress: apply(publicKeyToAddress, RustModule),
   PRIVATE_KEY_SIZE: PRIVATE_KEY_SIZE,
   PUBLIC_KEY_SIZE: PUBLIC_KEY_SIZE,
   ADDRESS_SIZE: ADDRESS_SIZE

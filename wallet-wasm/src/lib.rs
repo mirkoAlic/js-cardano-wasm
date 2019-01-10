@@ -141,6 +141,12 @@ unsafe fn read_redeem_private_key(rprv_ptr: *const c_uchar) -> redeem::PrivateKe
     redeem::PrivateKey::from_slice(rprv).unwrap()
 }
 
+unsafe fn read_redeem_public_key(rpub_ptr: *const c_uchar) -> redeem::PublicKey {
+    let rpub = std::slice::from_raw_parts(rpub_ptr, redeem::PUBLICKEY_SIZE);
+    redeem::PublicKey::from_slice(rpub).unwrap()
+}
+
+
 #[no_mangle]
 pub extern "C" fn wallet_from_enhanced_entropy( entropy_ptr: *const c_uchar
                                               , entropy_size: usize
@@ -1097,6 +1103,20 @@ pub extern "C" fn cardano_redeem_prv_to_pub(rprv_ptr: *const c_uchar, rpub_ptr: 
     let private_key = unsafe { read_redeem_private_key(rprv_ptr) };
     let public_key = private_key.public();
     unsafe { write_data(public_key.as_ref(), rpub_ptr); }
+}
+
+#[no_mangle]
+pub extern "C" fn cardano_redeem_pub_to_address(rpub_ptr: *const c_uchar, addr_ptr: *mut c_uchar) {
+    let public_key = unsafe { read_redeem_public_key(rpub_ptr) };
+
+    let addr_type = address::AddrType::ATRedeem;
+    let sd = address::SpendingData::RedeemASD(public_key.clone());
+    let attrs = address::Attributes::new_bootstrap_era(None);
+    let ea = address::ExtendedAddr::new(addr_type, sd, attrs);
+
+    let ea_bytes = cbor!(ea).unwrap();
+
+    unsafe { write_data(&ea_bytes, addr_ptr) }
 }
 
 #[no_mangle]
